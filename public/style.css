@@ -1,0 +1,144 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+  min-height: 100vh;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+  border-bottom: 1px solid #1e293b;
+  background: #111827;
+}
+.header h1 { margin: 0 0 4px; font-size: 24px; }
+.subtitle { margin: 0; color: #94a3b8; font-size: 14px; }
+.header-actions { display: flex; gap: 12px; align-items: center; }
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  padding: 24px 32px;
+}
+.card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 16px;
+}
+.card-label { color: #94a3b8; font-size: 12px; margin-bottom: 8px; text-transform: uppercase; }
+.card-wide { grid-column: 1 / -1; }
+.card-label .hint { text-transform: none; font-weight: 400; }
+.key-value { display: block; font-size: 14px; line-height: 1.5; }
+.card-value { font-size: 22px; font-weight: 700; }
+code { color: #7dd3fc; font-size: 13px; word-break: break-all; }
+.panel {
+  margin: 0 32px 32px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.panel-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #334155;
+}
+.panel-header h2 { margin: 0; font-size: 18px; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #334155; font-size: 14px; }
+th { color: #94a3b8; font-weight: 600; background: #172033; }
+.empty { text-align: center; color: #64748b; padding: 32px !important; }
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+.btn-primary { background: #2563eb; color: white; }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-secondary { background: #334155; color: #e2e8f0; }
+.btn-secondary:hover { background: #475569; }
+.btn-danger { background: #dc2626; color: white; }
+.btn-sm { padding: 6px 10px; font-size: 12px; }
+.btn-icon { background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; }
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-success { background: #14532d; color: #86efac; }
+.badge-warning { background: #713f12; color: #fde68a; }
+.badge-danger { background: #7f1d1d; color: #fca5a5; }
+.badge-muted { background: #334155; color: #cbd5e1; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal.hidden { display: none; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.6); }
+.modal-content {
+  position: relative;
+  width: min(900px, 92vw);
+  max-height: 90vh;
+  overflow: auto;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+}
+.modal-header, .modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #334155;
+}
+.modal-footer { border-bottom: none; border-top: 1px solid #334155; justify-content: flex-end; gap: 8px; }
+.modal-body { padding: 20px; }
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.code-block {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 12px;
+  overflow: auto;
+  font-size: 12px;
+  line-height: 1.5;
+  max-height: 240px;
+}
+.error-box {
+  background: #7f1d1d;
+  color: #fecaca;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 12px;
+}
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #14532d;
+  color: #86efac;
+  padding: 12px 16px;
+  border-radius: 8px;
+  z-index: 200;
+}
+.toast.error { background: #7f1d1d; color: #fca5a5; }
+.toast.hidden { display: none; }

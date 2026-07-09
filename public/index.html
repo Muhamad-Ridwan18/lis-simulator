@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LIS Simulator</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="header">
+    <div>
+      <h1>LIS Simulator</h1>
+      <p class="subtitle">Mock LIS untuk development lokal Klikmedis</p>
+    </div>
+    <div class="header-actions">
+      <span id="healthBadge" class="badge badge-muted">checking...</span>
+      <button id="btnRefresh" class="btn btn-secondary">Refresh</button>
+    </div>
+  </header>
+
+  <section class="cards">
+    <div class="card">
+      <div class="card-label">Order Endpoint</div>
+      <code id="orderEndpoint">POST /order</code>
+    </div>
+    <div class="card card-wide">
+      <div class="card-label">API Key LIS <span class="hint">(header: x-api-key)</span></div>
+      <code id="lisApiKey" class="key-value">-</code>
+    </div>
+    <div class="card">
+      <div class="card-label">Klikmedis Target</div>
+      <code id="kmTarget">-</code>
+    </div>
+    <div class="card">
+      <div class="card-label">Total Orders</div>
+      <div class="card-value" id="totalOrders">0</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Auto Send</div>
+      <div class="card-value" id="autoSend">-</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <h2>Orders Masuk</h2>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Waktu</th>
+            <th>Order Number</th>
+            <th>Pasien</th>
+            <th>Tests</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody">
+          <tr><td colspan="6" class="empty">Belum ada order</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Detail Order</h3>
+        <button class="btn-icon" data-close>&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-grid">
+          <div><strong>Order Number</strong><div id="dOrderNumber">-</div></div>
+          <div><strong>Pasien</strong><div id="dPatient">-</div></div>
+          <div><strong>Status</strong><div id="dStatus">-</div></div>
+          <div><strong>Diterima</strong><div id="dReceived">-</div></div>
+        </div>
+        <h4>Payload Order</h4>
+        <pre id="dPayload" class="code-block"></pre>
+        <h4>Hasil yang Akan Dikirim</h4>
+        <pre id="dResult" class="code-block"></pre>
+        <div id="dError" class="error-box hidden"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-close>Tutup</button>
+        <button id="btnSendResult" class="btn btn-primary">Kirim Hasil ke Klikmedis</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="/app.js"></script>
+</body>
+</html>

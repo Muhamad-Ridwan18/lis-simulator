@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LIS Standalone Simulator</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="header">
+    <div>
+      <h1>LIS Standalone Simulator</h1>
+      <p class="subtitle">Dashboard simulasi API Integrasi Lab Klikmedis</p>
+    </div>
+    <div class="header-actions">
+      <span id="healthBadge" class="badge badge-muted">checking...</span>
+      <button id="btnRefresh" class="btn btn-secondary">Refresh</button>
+      <button id="btnRun" class="btn btn-primary">Run Full Simulation</button>
+    </div>
+  </header>
+
+  <section class="cards">
+    <div class="card">
+      <div class="card-label">Base URL</div>
+      <code id="baseUrl">-</code>
+    </div>
+    <div class="card">
+      <div class="card-label">API Key</div>
+      <code id="apiKeyPreview">-</code>
+    </div>
+    <div class="card">
+      <div class="card-label">Auto Specimen</div>
+      <div class="card-value" id="autoSpecimen">-</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Total Runs</div>
+      <div class="card-value" id="totalRuns">0</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <h2>Form Simulasi Manual</h2>
+    </div>
+    <div class="form-wrap">
+      <div class="form-grid">
+        <label>Nama Pasien<input id="patientName" type="text" placeholder="Budi Santoso"></label>
+        <label>Gender
+          <select id="patientGender">
+            <option value="L">Laki-laki</option>
+            <option value="P">Perempuan</option>
+          </select>
+        </label>
+        <label>Tanggal Lahir<input id="patientDob" type="date"></label>
+        <label>No KTP<input id="patientIdentityNumber" type="text" placeholder="3201234567891001"></label>
+        <label>Nomor HP<input id="patientPhone" type="text" placeholder="081234567890"></label>
+        <label>No Asuransi<input id="patientInsuranceNumber" type="text" placeholder="0001234567890"></label>
+        <label>Dokter
+          <select id="doctorSelect"></select>
+        </label>
+        <label>Poliklinik
+          <select id="departmentSelect"></select>
+        </label>
+      </div>
+      <div class="form-inline">
+        <label><input id="includeSpecimen" type="checkbox" checked> Sertakan specimen</label>
+      </div>
+      <h4>Pilih Pemeriksaan</h4>
+      <div id="testsBox" class="check-grid"></div>
+      <div class="form-actions">
+        <button id="btnRunCustom" class="btn btn-primary">Jalankan Simulasi Manual</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <h2>Riwayat Simulasi</h2>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Waktu</th>
+            <th>Run ID</th>
+            <th>Status</th>
+            <th>Steps</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="runsBody">
+          <tr><td colspan="5" class="empty">Belum ada run simulasi</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Detail Run</h3>
+        <button class="btn-icon" data-close>&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-grid">
+          <div><strong>Run ID</strong><div id="dRunId">-</div></div>
+          <div><strong>Status</strong><div id="dStatus">-</div></div>
+          <div><strong>Started</strong><div id="dStarted">-</div></div>
+          <div><strong>Finished</strong><div id="dFinished">-</div></div>
+        </div>
+        <h4>Steps</h4>
+        <pre id="dSteps" class="code-block"></pre>
+        <h4>Payloads</h4>
+        <pre id="dPayloads" class="code-block"></pre>
+        <h4>Responses</h4>
+        <pre id="dResponses" class="code-block"></pre>
+        <div id="dError" class="error-box hidden"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-close>Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
