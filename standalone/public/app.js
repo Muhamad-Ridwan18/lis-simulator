@@ -66,6 +66,49 @@ async function loadRuns() {
   `).join('');
 }
 
+async function loadSettings() {
+  try {
+    const response = await fetch('/api/settings');
+    const json = await response.json();
+    if (!json.success) throw new Error(json.message);
+    $('#cfgPort').value = json.data.port ?? 3010;
+    $('#cfgBaseUrl').value = json.data.base_url ?? '';
+    $('#cfgApiKey').value = json.data.api_key ?? '';
+    $('#cfgAutoSpecimen').checked = Boolean(json.data.auto_generate_specimen);
+  } catch (error) {
+    showToast(`Gagal load setting: ${error.message}`, true);
+  }
+}
+
+async function saveSettings() {
+  const btn = $('#btnSaveConfig');
+  btn.disabled = true;
+  btn.textContent = 'Menyimpan...';
+  try {
+    const payload = {
+      port: Number($('#cfgPort').value || 3010),
+      base_url: $('#cfgBaseUrl').value.trim(),
+      api_key: $('#cfgApiKey').value.trim(),
+      auto_generate_specimen: $('#cfgAutoSpecimen').checked,
+    };
+    const response = await fetch('/api/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const json = await response.json();
+    if (!json.success) throw new Error(json.message);
+    showToast(json.message);
+    await loadHealth();
+    await loadReferences();
+  } catch (error) {
+    showToast(error.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Simpan Pengaturan';
+  }
+}
+
 function renderReferenceOptions() {
   const doctorSelect = $('#doctorSelect');
   const departmentSelect = $('#departmentSelect');
@@ -204,6 +247,7 @@ $('#btnRefresh').addEventListener('click', () => {
 });
 $('#btnRun').addEventListener('click', runSimulation);
 $('#btnRunCustom').addEventListener('click', runCustomSimulation);
+$('#btnSaveConfig').addEventListener('click', saveSettings);
 document.querySelectorAll('[data-close]').forEach((el) => {
   el.addEventListener('click', () => $('#modal').classList.add('hidden'));
 });
@@ -211,5 +255,6 @@ document.querySelectorAll('[data-close]').forEach((el) => {
 window.openDetail = openDetail;
 
 loadHealth();
+loadSettings();
 loadRuns();
 loadReferences();

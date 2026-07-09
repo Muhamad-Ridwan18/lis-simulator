@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import crypto from 'crypto';
 import express from 'express';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { KlikmedisApiClient } from './klikmedisApi.js';
@@ -9,24 +10,62 @@ import { getRun, listRuns, saveRun } from './store.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
+const ENV_PATH = path.join(__dirname, '..', '.env');
 
-const PORT = Number(process.env.PORT ?? 3010);
-const BASE_URL = process.env.KLIKMEDIS_BASE_URL?.trim();
-const API_KEY = process.env.KLIKMEDIS_API_KEY?.trim();
-const AUTO_GENERATE_SPECIMEN = process.env.AUTO_GENERATE_SPECIMEN !== 'false';
+const runtimeConfig = {
+  port: Number(process.env.PORT ?? 3010),
+  baseUrl: process.env.KLIKMEDIS_BASE_URL?.trim() ?? '',
+  apiKey: process.env.KLIKMEDIS_API_KEY?.trim() ?? '',
+  autoGenerateSpecimen: process.env.AUTO_GENERATE_SPECIMEN !== 'false',
+};
 
-if (!BASE_URL || !API_KEY) {
+if (!runtimeConfig.baseUrl || !runtimeConfig.apiKey) {
   console.error('KLIKMEDIS_BASE_URL dan KLIKMEDIS_API_KEY wajib diisi pada .env standalone');
   process.exit(1);
 }
 
-const client = new KlikmedisApiClient({ baseUrl: BASE_URL, apiKey: API_KEY });
+let client = new KlikmedisApiClient({ baseUrl: runtimeConfig.baseUrl, apiKey: runtimeConfig.apiKey });
 
 app.use(express.json({ limit: '2mb' }));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 function nowSql() {
   return new Date().toISOString().slice(0, 19).replace('T', ' ');
+}
+
+function saveEnvConfig(nextConfig) {
+  const nextMap = {
+    PORT: String(nextConfig.port),
+    KLIKMEDIS_BASE_URL: nextConfig.baseUrl,
+    KLIKMEDIS_API_KEY: nextConfig.apiKey,
+    AUTO_GENERATE_SPECIMEN: nextConfig.autoGenerateSpecimen ? 'true' : 'false',
+  };
+
+  const existingLines = fs.existsSync(ENV_PATH) ? fs.readFileSync(ENV_PATH, 'utf8').split(/\r?\n/) : [];
+  const foundKeys = new Set();
+  const updatedLines = existingLines.map((line) => {
+    const match = line.match(/^([A-Z0-9_]+)=(.*)$/);
+    if (!match) return line;
+    const key = match[1];
+    if (!(key in nextMap)) return line;
+    foundKeys.add(key);
+    return `${key}=${nextMap[key]}`;
+  });
+
+  Object.keys(nextMap).forEach((key) => {
+    if (!foundKeys.has(key)) {
+      updatedLines.push(`${key}=${nextMap[key]}`);
+    }
+  });
+
+  fs.writeFileSync(ENV_PATH, `${updatedLines.join('\n').trim()}\n`, 'utf8');
+}
+
+function applyRuntimeConfig(nextConfig) {
+  runtimeConfig.baseUrl = nextConfig.baseUrl;
+  runtimeConfig.apiKey = nextConfig.apiKey;
+  runtimeConfig.autoGenerateSpecimen = nextConfig.autoGenerateSpecimen;
+  client = new KlikmedisApiClient({ baseUrl: runtimeConfig.baseUrl, apiKey: runtimeConfig.apiKey });
 }
 
 function isUuid(value) {
@@ -134,7 +173,7 @@ async function runSimulation({
   selectedTestIds = [],
   doctorId = null,
   departmentId = null,
-  includeSpecimen = AUTO_GENERATE_SPECIMEN,
+  includeSpecimen = runtimeConfig.autoGenerateSpecimen,
 }) {
   const run = {
     id: crypto.randomUUID(),
@@ -231,7 +270,7 @@ app.get('/health', (_req, res) => {
   res.json({
     status: 'ok',
     service: 'lis-simulator-standalone',
-    base_url: BASE_URL,
+    base_url: runtimeConfig.baseUrl,
     timestamp: new Date().toISOString(),
   });
 });
@@ -240,10 +279,58 @@ app.get('/api/config', (_req, res) => {
   res.json({
     success: true,
     data: {
-      base_url: BASE_URL,
-      api_key_preview: `${API_KEY.slice(0, 4)}***${API_KEY.slice(-2)}`,
-      auto_generate_specimen: AUTO_GENERATE_SPECIMEN,
+      base_url: runtimeConfig.baseUrl,
+      api_key_preview: `${runtimeConfig.apiKey.slice(0, 4)}***${runtimeConfig.apiKey.slice(-2)}`,
+      auto_generate_specimen: runtimeConfig.autoGenerateSpecimen,
     },
+  });
+});
+
+app.get('/api/settings', (_req, res) => {
+  res.json({
+    success: true,
+    data: {
+      port: runtimeConfig.port,
+      base_url: runtimeConfig.baseUrl,
+      api_key: runtimeConfig.apiKey,
+      auto_generate_specimen: runtimeConfig.autoGenerateSpecimen,
+    },
+  });
+});
+
+app.put('/api/settings', (req, res) => {
+  const body = req.body ?? {};
+  const nextConfig = {
+    port: Number(body.port ?? runtimeConfig.port),
+    baseUrl: String(body.base_url ?? '').trim(),
+    apiKey: String(body.api_key ?? '').trim(),
+    autoGenerateSpecimen: Boolean(body.auto_generate_specimen),
+  };
+
+  if (!nextConfig.baseUrl || !nextConfig.apiKey) {
+    return res.status(422).json({
+      success: false,
+      message: 'base_url dan api_key wajib diisi',
+    });
+  }
+  if (!Number.isFinite(nextConfig.port) || nextConfig.port < 1 || nextConfig.port > 65535) {
+    return res.status(422).json({
+      success: false,
+      message: 'port tidak valid',
+    });
+  }
+
+  saveEnvConfig(nextConfig);
+  applyRuntimeConfig(nextConfig);
+  const restartRequired = nextConfig.port !== runtimeConfig.port;
+  runtimeConfig.port = nextConfig.port;
+
+  return res.json({
+    success: true,
+    message: restartRequired
+      ? 'Konfigurasi disimpan. Restart server diperlukan untuk menerapkan PORT baru.'
+      : 'Konfigurasi berhasil disimpan.',
+    data: { restart_required: restartRequired },
   });
 });
 
@@ -323,6 +410,6 @@ app.post('/api/simulate/custom', async (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Standalone simulator running at http://127.0.0.1:${PORT}`);
+app.listen(runtimeConfig.port, () => {
+  console.log(`Standalone simulator running at http://127.0.0.1:${runtimeConfig.port}`);
 });

@@ -40,6 +40,31 @@
 
   <section class="panel">
     <div class="panel-header">
+      <h2>Pengaturan ENV</h2>
+    </div>
+    <div class="form-wrap">
+      <div class="form-grid">
+        <label>PORT
+          <input id="cfgPort" type="number" min="1" max="65535" placeholder="3010">
+        </label>
+        <label>KLIKMEDIS BASE URL
+          <input id="cfgBaseUrl" type="text" placeholder="https://domain-klinik.klikmedis.id">
+        </label>
+        <label>KLIKMEDIS API KEY
+          <input id="cfgApiKey" type="text" placeholder="lab_xxx">
+        </label>
+      </div>
+      <div class="form-inline">
+        <label><input id="cfgAutoSpecimen" type="checkbox"> AUTO_GENERATE_SPECIMEN</label>
+      </div>
+      <div class="form-actions">
+        <button id="btnSaveConfig" class="btn btn-secondary">Simpan Pengaturan</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
       <h2>Form Simulasi Manual</h2>
     </div>
     <div class="form-wrap">
