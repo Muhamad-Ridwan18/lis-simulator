@@ -14,6 +14,7 @@
     </div>
     <div class="header-actions">
       <span id="healthBadge" class="badge badge-muted">checking...</span>
+      <button id="btnLogin" class="btn btn-secondary">Test Login JWT</button>
       <button id="btnRefresh" class="btn btn-secondary">Refresh</button>
     </div>
   </header>
@@ -24,8 +25,12 @@
       <code id="orderEndpoint">POST /order</code>
     </div>
     <div class="card card-wide">
-      <div class="card-label">API Key LIS <span class="hint">(header: x-api-key)</span></div>
+      <div class="card-label">API Key LIS (masuk ke simulator) <span class="hint">header: x-api-key → POST /order</span></div>
       <code id="lisApiKey" class="key-value">-</code>
+    </div>
+    <div class="card card-wide">
+      <div class="card-label">Auth Klikmedis (kirim hasil) <span class="hint">Bearer JWT → POST /api/lis/v1/result/receive</span></div>
+      <code id="kmAuth" class="key-value">-</code>
     </div>
     <div class="card">
       <div class="card-label">Klikmedis Target</div>

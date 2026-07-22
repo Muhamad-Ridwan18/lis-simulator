@@ -35,9 +35,10 @@ export function getOrder(orderNumber) {
 }
 
 export function saveOrder(payload) {
-  const orderNumber = payload?.order_info?.order_number;
+  const orderId = payload?.order_info?.order_id ?? payload?.order_id ?? null;
+  const orderNumber = payload?.order_info?.order_number ?? orderId;
   if (!orderNumber) {
-    throw new Error('order_info.order_number wajib ada');
+    throw new Error('order_info.order_id atau order_info.order_number wajib ada');
   }
 
   const orders = readAll();
@@ -45,6 +46,7 @@ export function saveOrder(payload) {
   const now = new Date().toISOString();
 
   if (existing) {
+    existing.order_id = orderId ? String(orderId) : existing.order_id ?? String(orderNumber);
     existing.payload = payload;
     existing.received_at = now;
     existing.status = 'received';
@@ -57,6 +59,7 @@ export function saveOrder(payload) {
 
   const order = {
     id: crypto.randomUUID(),
+    order_id: orderId ? String(orderId) : String(orderNumber),
     order_number: orderNumber,
     patient_name: payload?.patient?.name ?? '-',
     test_count: Array.isArray(payload?.order) ? payload.order.length : 0,

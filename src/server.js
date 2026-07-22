@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { listOrders, getOrder, saveOrder, markResultSent, deleteOrder } from './store.js';
 import { buildResultPayload } from './resultBuilder.js';
-import { sendResultToKlikmedis } from './klikmedisClient.js';
+import { sendResultToKlikmedis, testKlikmedisAuth } from './klikmedisClient.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -80,6 +80,8 @@ app.get('/health', (_req, res) => {
     status: 'ok',
     service: 'lis-simulator',
     klikmedis_base_url: process.env.KLIKMEDIS_BASE_URL ?? 'http://127.0.0.1:8000',
+    klikmedis_auth: 'jwt-bearer',
+    klikmedis_auth_ready: Boolean(process.env.KLIKMEDIS_EMAIL?.trim() && process.env.KLIKMEDIS_PASSWORD?.trim()),
     auto_send: process.env.AUTO_SEND_RESULT === 'true',
     lis_auth_required: true,
     timestamp: new Date().toISOString(),
@@ -91,20 +93,41 @@ app.get('/api/config', (_req, res) => {
     success: true,
     data: {
       lis_api_key: LIS_API_KEY,
+      klikmedis_email: process.env.KLIKMEDIS_EMAIL?.trim() ?? '',
+      klikmedis_auth: 'Bearer JWT',
       order_auth_header: 'x-api-key',
+      result_auth_header: 'Authorization: Bearer <token>',
+      result_target: `${(process.env.KLIKMEDIS_BASE_URL ?? 'http://127.0.0.1:8000').replace(/\/$/, '')}/api/lis/v1/result/receive`,
     },
   });
+});
+
+app.post('/api/auth/login', async (_req, res) => {
+  try {
+    const body = await testKlikmedisAuth();
+    return res.json({
+      success: true,
+      message: 'Login Klikmedis berhasil',
+      data: {
+        clinic_name: body?.data?.clinic_name ?? null,
+        expires_in: body?.data?.expires_in ?? null,
+      },
+    });
+  } catch (error) {
+    return res.status(401).json({ success: false, message: error.message });
+  }
 });
 
 app.post('/order', requireLisApiKey, (req, res) => {
   try {
     const payload = req.body;
-    const orderNumber = payload?.order_info?.order_number;
+    const orderId = payload?.order_info?.order_id ?? payload?.order_id ?? null;
+    const orderNumber = payload?.order_info?.order_number ?? orderId;
 
     if (!orderNumber) {
       return res.status(422).json({
         success: false,
-        message: 'order_info.order_number wajib diisi',
+        message: 'order_info.order_id atau order_info.order_number wajib diisi',
       });
     }
 
@@ -178,5 +201,6 @@ app.delete('/api/orders/:orderNumber', (req, res) => {
 app.listen(PORT, () => {
   console.log(`LIS Simulator running at http://127.0.0.1:${PORT}`);
   console.log(`Order endpoint: POST http://127.0.0.1:${PORT}/order`);
-  console.log(`LIS API Key: ${LIS_API_KEY}`);
+  console.log(`LIS API Key (masuk): ${LIS_API_KEY}`);
+  console.log(`Klikmedis auth (kirim hasil): JWT Bearer (${process.env.KLIKMEDIS_EMAIL?.trim() || 'email belum diisi'})`);
 });

@@ -31,9 +31,10 @@ copy .env.example .env
 3. Isi `.env`:
 
 - `PORT` (default `3001`)
-- `LIS_API_KEY` (wajib)
+- `LIS_API_KEY` (wajib, untuk order masuk ke simulator)
 - `KLIKMEDIS_BASE_URL`
-- `KLIKMEDIS_API_KEY`
+- `KLIKMEDIS_EMAIL` (login JWT untuk kirim hasil)
+- `KLIKMEDIS_PASSWORD`
 - `AUTO_SEND_RESULT` (`true/false`)
 - `AUTO_SEND_DELAY_MS`
 
@@ -55,6 +56,7 @@ npm start
 
 - Dashboard: `http://127.0.0.1:3001`
 - Endpoint order LIS: `POST /order`
+- Kirim hasil ke Klikmedis: `POST /api/lis/v1/result/receive` (JWT Bearer)
 
 ---
 

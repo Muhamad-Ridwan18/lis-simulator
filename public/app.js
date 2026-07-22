@@ -26,15 +26,25 @@ function fmtDate(iso) {
 
 function buildPreviewResult(order) {
   const tests = order?.payload?.order ?? [];
+  const orderId = order.order_id ?? order.payload?.order_info?.order_id ?? order.order_number;
   return {
-    order_number: order.order_number,
+    order_id: orderId,
+    status: 'completed',
+    validation_time: '(auto ISO)',
+    validator_name: '(auto)',
+    notes: 'Pemeriksaan selesai',
     results: tests.map((t) => ({
-      test_id: String(t.test_id),
-      test_name: String(t.test_name ?? ''),
+      test_id: String(t.test_id ?? t.indicator_id ?? t.item_id ?? ''),
+      parameter: String(t.parameter ?? t.test_name ?? t.item_name ?? ''),
       value: '(auto-generated)',
-      flag_critical: 'N',
-      nilai_normal: 'Normal',
+      flag: 'N',
+      reference_range: t.reference_range ?? t.normal_value ?? '-',
+      unit: t.unit ?? '-',
+      notes: 'Hasil normal',
+      item_id: String(t.item_id ?? t.test_id ?? ''),
+      item_name: String(t.item_name ?? t.test_name ?? ''),
     })),
+    specimens: '(auto dari payload order)',
   };
 }
 
@@ -49,9 +59,15 @@ async function loadHealth() {
     $('#healthBadge').textContent = 'online';
     $('#healthBadge').className = 'badge badge-success';
     $('#orderEndpoint').textContent = `POST ${location.origin}/order`;
-    $('#kmTarget').textContent = data.klikmedis_base_url + '/api/lis/receive-result';
+    $('#kmTarget').textContent = config.data?.result_target ?? data.klikmedis_base_url + '/api/lis/v1/result/receive';
     $('#autoSend').textContent = data.auto_send ? 'ON' : 'OFF';
     $('#lisApiKey').textContent = config.data?.lis_api_key ?? '-';
+    $('#kmAuth').textContent = config.data?.klikmedis_email
+      ? `${config.data.klikmedis_email} (${config.data.klikmedis_auth ?? 'JWT'})`
+      : 'KLIKMEDIS_EMAIL belum diisi';
+    if (!data.klikmedis_auth_ready) {
+      showToast('Isi KLIKMEDIS_EMAIL dan KLIKMEDIS_PASSWORD di .env untuk kirim hasil', true);
+    }
   } catch {
     $('#healthBadge').textContent = 'offline';
     $('#healthBadge').className = 'badge badge-danger';
@@ -139,10 +155,28 @@ async function deleteOrder(orderNumber) {
   await loadOrders();
 }
 
+async function testLogin() {
+  const btn = $('#btnLogin');
+  btn.disabled = true;
+  btn.textContent = 'Logging in...';
+  try {
+    const res = await fetch('/api/auth/login', { method: 'POST' });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.message);
+    showToast(`JWT OK: ${json.data?.clinic_name || 'klinik'}`);
+  } catch (err) {
+    showToast(err.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Test Login JWT';
+  }
+}
+
 $('#btnRefresh').addEventListener('click', () => {
   loadHealth();
   loadOrders();
 });
+$('#btnLogin').addEventListener('click', testLogin);
 
 $('#btnSendResult').addEventListener('click', () => {
   if (currentOrderNumber) sendResult(currentOrderNumber);
