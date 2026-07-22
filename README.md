@@ -60,7 +60,13 @@ npm start
 
 ## 2) Menjalankan Versi Standalone (`standalone`)
 
-Versi ini terpisah di folder `standalone/`.
+Versi ini terpisah di folder `standalone/` dan mengikuti **kontrak API baru**:
+
+- Dokumen: https://app.klikmedis.com/docs/integrasi-lab-api
+- Auth: JWT Bearer (`POST /api/v1/auth/login`)
+- Sync pasien: `POST /api/lis/v1/patient`
+- Visit/order: `POST /api/lis/v1/visit` (format baru: UUID `patient_id`, `department_id`, `doctor_id`, `item_id`)
+- Hasil lab: `POST /api/lis/v1/result/receive` (pakai `order_id` + `item_id`)
 
 ### Setup
 
@@ -85,9 +91,12 @@ copy .env.example .env
 4. Isi `.env`:
 
 - `PORT` (default `3010`)
-- `KLIKMEDIS_BASE_URL` (wajib)
-- `KLIKMEDIS_API_KEY` (wajib)
+- `KLIKMEDIS_BASE_URL` (wajib, contoh: `https://app.klikmedis.com`)
+- `KLIKMEDIS_EMAIL` (wajib, akun klinik)
+- `KLIKMEDIS_PASSWORD` (wajib)
 - `AUTO_GENERATE_SPECIMEN` (`true/false`)
+
+Atau isi langsung dari panel **Pengaturan ENV** di dashboard.
 
 ### Run
 
@@ -107,15 +116,20 @@ npm start
 
 - Dashboard: `http://127.0.0.1:3010`
 
+### Flow simulasi standalone
+
+1. Login JWT
+2. Ambil master (`dokter`, `poliklinik`, `tindakan`)
+3. Sync pasien (`/api/lis/v1/patient`) → dapat `patient_id`
+4. Submit visit (`/api/lis/v1/visit`) → dapat `order_id`
+5. Submit hasil (`/api/lis/v1/result/receive`) pakai `order_id` + `item_id`
+
 ### Fitur utama standalone
 
-- Form simulasi manual:
-  - isi data pasien
-  - pilih dokter/poliklinik
-  - pilih pemeriksaan
-  - opsi include specimen
-- Riwayat run simulasi + detail payload/response
-- Pengaturan ENV langsung dari dashboard (tersimpan ke `standalone/.env`)
+- Form simulasi manual (pasien, dokter, poliklinik, tindakan, specimen)
+- Tombol **Test Login** untuk cek JWT
+- Riwayat run + detail payload/response
+- Pengaturan ENV dari dashboard (tersimpan ke `standalone/.env`)
 
 > Catatan: jika ubah `PORT` dari dashboard, server perlu restart agar port baru aktif.
 

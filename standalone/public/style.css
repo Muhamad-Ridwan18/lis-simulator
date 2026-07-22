@@ -63,6 +63,36 @@ input, select {
 }
 .form-inline { margin: 14px 0; }
 .form-actions { margin-top: 14px; }
+.form-divider {
+  border: none;
+  border-top: 1px solid #334155;
+  margin: 18px 0;
+}
+.patient-search {
+  margin-bottom: 4px;
+}
+.mode-switch {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.mode-option {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  color: #e2e8f0;
+  font-size: 14px;
+}
+.mode-option input {
+  width: auto;
+  margin: 0;
+}
+.hint-text {
+  color: #94a3b8;
+  font-size: 12px;
+  margin: 0 0 12px;
+}
 .check-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -73,6 +103,36 @@ input, select {
   border-radius: 8px;
   padding: 10px;
   color: #cbd5e1;
+}
+.check-item small {
+  display: block;
+  margin-top: 4px;
+  color: #94a3b8;
+}
+.check-item .indicator-list {
+  color: #7dd3fc;
+}
+.result-group {
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 14px;
+  background: #111827;
+}
+.result-row {
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: #172033;
+}
+.result-row h5 {
+  margin: 0 0 10px;
+  color: #e2e8f0;
+  font-size: 14px;
+}
+.result-row .form-grid {
+  margin-top: 4px;
 }
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; }
@@ -93,6 +153,7 @@ th { color: #94a3b8; font-weight: 600; background: #172033; }
 .btn-secondary:hover { background: #475569; }
 .btn-sm { padding: 6px 10px; font-size: 12px; }
 .btn-icon { background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .badge {
   display: inline-block;
   padding: 4px 10px;

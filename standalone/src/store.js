@@ -12,3 +12,10 @@ export function saveRun(run) {
   runs.push(run);
   return run;
 }
+
+export function updateRun(runId, patch = {}) {
+  const run = getRun(runId);
+  if (!run) return null;
+  Object.assign(run, patch);
+  return run;
+}

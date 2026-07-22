@@ -3,17 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LIS Standalone Simulator</title>
+  <title>LIS Standalone Simulator (API v1 JWT)</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <header class="header">
     <div>
       <h1>LIS Standalone Simulator</h1>
-      <p class="subtitle">Dashboard simulasi API Integrasi Lab Klikmedis</p>
+      <p class="subtitle">Simulasi kontrak API Integrasi Lab v1 (JWT Bearer)</p>
     </div>
     <div class="header-actions">
       <span id="healthBadge" class="badge badge-muted">checking...</span>
+      <button id="btnLogin" class="btn btn-secondary">Test Login</button>
       <button id="btnRefresh" class="btn btn-secondary">Refresh</button>
       <button id="btnRun" class="btn btn-primary">Run Full Simulation</button>
     </div>
@@ -25,8 +26,12 @@
       <code id="baseUrl">-</code>
     </div>
     <div class="card">
-      <div class="card-label">API Key</div>
-      <code id="apiKeyPreview">-</code>
+      <div class="card-label">Email Auth</div>
+      <code id="emailPreview">-</code>
+    </div>
+    <div class="card">
+      <div class="card-label">API Contract</div>
+      <div class="card-value" id="apiContract">v1-jwt</div>
     </div>
     <div class="card">
       <div class="card-label">Auto Specimen</div>
@@ -48,10 +53,13 @@
           <input id="cfgPort" type="number" min="1" max="65535" placeholder="3010">
         </label>
         <label>KLIKMEDIS BASE URL
-          <input id="cfgBaseUrl" type="text" placeholder="https://domain-klinik.klikmedis.id">
+          <input id="cfgBaseUrl" type="text" placeholder="https://app.klikmedis.com">
         </label>
-        <label>KLIKMEDIS API KEY
-          <input id="cfgApiKey" type="text" placeholder="lab_xxx">
+        <label>KLIKMEDIS EMAIL
+          <input id="cfgEmail" type="email" placeholder="admin@klinik.com">
+        </label>
+        <label>KLIKMEDIS PASSWORD
+          <input id="cfgPassword" type="password" placeholder="password">
         </label>
       </div>
       <div class="form-inline">
@@ -65,10 +73,59 @@
 
   <section class="panel">
     <div class="panel-header">
-      <h2>Form Simulasi Manual</h2>
+      <h2>Form Simulasi Manual (Format Baru)</h2>
     </div>
     <div class="form-wrap">
+      <div class="mode-switch">
+        <label class="mode-option">
+          <input type="radio" name="patientMode" value="search" checked>
+          Cari Pasien (auto-fill)
+        </label>
+        <label class="mode-option">
+          <input type="radio" name="patientMode" value="manual">
+          Input Manual
+        </label>
+      </div>
+      <p id="patientModeHint" class="hint-text">Mode cari: gunakan NIK atau Nama+Gender+Tgl Lahir, lalu pilih pasien untuk auto-fill. Field tetap bisa diedit.</p>
+
+      <div id="patientSearchBox" class="patient-search">
+        <div class="form-grid">
+          <label>Cari Pasien (NIK)
+            <input id="searchNik" type="text" placeholder="3201234567891001">
+          </label>
+          <label>Atau Nama Pasien
+            <input id="searchName" type="text" placeholder="Budi Santoso">
+          </label>
+          <label>Gender (untuk cari nama)
+            <select id="searchGender">
+              <option value="L">Laki-laki</option>
+              <option value="P">Perempuan</option>
+            </select>
+          </label>
+          <label>Tgl Lahir (untuk cari nama)
+            <input id="searchDob" type="date">
+          </label>
+        </div>
+        <div class="form-actions" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <button id="btnSearchPatient" class="btn btn-secondary">Cari Pasien</button>
+          <button id="btnClearPatient" class="btn btn-secondary">Reset Form Pasien</button>
+          <span id="patientSearchHint" class="hint-text">Pilih pasien dari hasil pencarian untuk auto-fill.</span>
+        </div>
+        <label style="margin-top:12px;">Hasil Pencarian Pasien
+          <select id="patientSelect">
+            <option value="">-- pilih pasien --</option>
+          </select>
+        </label>
+      </div>
+      <hr class="form-divider">
+      <h4 id="patientFormTitle">Data Pasien</h4>
       <div class="form-grid">
+        <label id="patientIdWrap">Patient ID (dari pencarian)
+          <input id="patientId" type="text" placeholder="kosong = pasien baru / upsert by NIK" readonly>
+        </label>
+        <label id="patientMrnWrap">No RM (dari pencarian)
+          <input id="patientMrn" type="text" placeholder="medical_record_number" readonly>
+        </label>
         <label>Nama Pasien<input id="patientName" type="text" placeholder="Budi Santoso"></label>
         <label>Gender
           <select id="patientGender">
@@ -77,23 +134,53 @@
           </select>
         </label>
         <label>Tanggal Lahir<input id="patientDob" type="date"></label>
-        <label>No KTP<input id="patientIdentityNumber" type="text" placeholder="3201234567891001"></label>
+        <label>No KTP / NIK<input id="patientIdentityNumber" type="text" placeholder="3201234567891001"></label>
         <label>Nomor HP<input id="patientPhone" type="text" placeholder="081234567890"></label>
-        <label>No Asuransi<input id="patientInsuranceNumber" type="text" placeholder="0001234567890"></label>
+        <label>Email Pasien<input id="patientEmail" type="email" placeholder="pasien@email.com"></label>
         <label>Dokter
           <select id="doctorSelect"></select>
         </label>
         <label>Poliklinik
           <select id="departmentSelect"></select>
         </label>
+        <label>Jenis Asuransi
+          <select id="insuranceType">
+            <option value="BPJS">BPJS</option>
+            <option value="Umum">Umum</option>
+          </select>
+        </label>
+        <label>No Asuransi / No Kartu
+          <input id="insuranceNumber" type="text" placeholder="000123456789012">
+        </label>
+        <label>Catatan Order
+          <input id="orderNotes" type="text" placeholder="Pemeriksaan lab rutin">
+        </label>
       </div>
       <div class="form-inline">
         <label><input id="includeSpecimen" type="checkbox" checked> Sertakan specimen</label>
       </div>
-      <h4>Pilih Pemeriksaan</h4>
+      <h4>Pilih Tindakan (item_id)</h4>
       <div id="testsBox" class="check-grid"></div>
       <div class="form-actions">
-        <button id="btnRunCustom" class="btn btn-primary">Jalankan Simulasi Manual</button>
+        <button id="btnCreateVisit" class="btn btn-primary">1. Buat Kunjungan</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="resultPanel" class="panel hidden">
+    <div class="panel-header">
+      <h2>2. Isi Nilai Hasil per Indikator</h2>
+    </div>
+    <div class="form-wrap">
+      <div class="detail-grid" style="margin-bottom: 16px;">
+        <div><strong>Run ID</strong><div id="pendingRunId">-</div></div>
+        <div><strong>Order ID</strong><div id="pendingOrderId">-</div></div>
+        <div><strong>Visit Number</strong><div id="pendingVisitNumber">-</div></div>
+      </div>
+      <div id="resultFormBox"></div>
+      <div class="form-actions" style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button id="btnFillSuggested" class="btn btn-secondary">Isi Saran Otomatis</button>
+        <button id="btnSubmitResult" class="btn btn-primary">3. Kirim Hasil Pemeriksaan</button>
       </div>
     </div>
   </section>
